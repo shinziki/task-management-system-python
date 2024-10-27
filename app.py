@@ -12,7 +12,21 @@ def get_db_connection():
 # Home route
 @app.route('/')
 def index():
-    return render_template('index.html')
+    conn = get_db_connection()
+    tasks = conn.execute('SELECT * FROM tasks').fetchall()
+    conn.close()
+    return render_template('index.html', tasks=tasks)
+
+#Add task route
+@app.route('/add', methods=['POST'])
+def add_task():
+    title = request.form['title']
+    if title: #Check if title is not empty
+        conn = get_db_connection()
+        conn.execute('INSERT INTO tasks (title) VALUES (?)', (title,))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('index'))
 
 # Run the application
 if __name__ == '__main__':
